@@ -30,7 +30,7 @@ namespace CmdConsole
             inputField.onSubmit.AddListener(OnSubmit);
         }
 
-        #region Input Processing
+        #region Input String Processing
         private char OnValidateInput(string text, int charIndex, char addedChar)
         {
             if (char.IsLetterOrDigit(addedChar) || addedChar == '-')
@@ -55,12 +55,12 @@ namespace CmdConsole
             List<string> previousArgs = arguments;
             arguments = Regex.Split(input, @"\s").Where(s => s.Length != 0).ToList<string>();
 
-            if (arguments.Any() && !previousArgs.Any())
+            if (arguments.Any() && !previousArgs.Any()) //If this is the first input
             {
                 previousArgs = arguments;
+                TryParseCommand();
             }
-
-            if (new HashSet<string>(arguments).SetEquals(previousArgs))
+            else if (new HashSet<string>(arguments).SetEquals(previousArgs))
             {
                 return;
             }
@@ -73,7 +73,6 @@ namespace CmdConsole
                     {
                         if (i == 0)
                         {
-                            Debug.Log("Parsing command...");
                             TryParseCommand();
                             for (int c = 1; c < arguments.Count; c++)
                             {
