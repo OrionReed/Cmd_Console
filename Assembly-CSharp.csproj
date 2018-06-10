@@ -73,6 +73,9 @@
      <Compile Include="Assets\CmdConsole\CmdCore\Code\Variable.cs" />
      <Compile Include="Assets\CmdConsole\CmdCore\Default Commands\Cmd_Alpha.cs" />
      <Compile Include="Assets\CmdConsole\CmdCore\Default Global Variables\GlobalVar_Transform.cs" />
+     <Compile Include="Assets\FlexibleUISystems\FlexibleDraggableObject.cs" />
+     <Compile Include="Assets\FlexibleUISystems\FlexibleExtensions.cs" />
+     <Compile Include="Assets\FlexibleUISystems\FlexibleResizeHandler.cs" />
      <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface-Mobile.shader" />
      <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
      <None Include="Assets\TextMesh Pro\Resources\Shaders\TMPro_Properties.cginc" />

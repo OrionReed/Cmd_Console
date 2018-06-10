@@ -20,8 +20,12 @@ namespace CmdConsole
         */
         [SerializeField] private TMP_InputField inputField;
 
+        [Header("Debug")]
+        [SerializeField] private bool CommandParseDebug = false;
+
         private Selection<Command> commandSelection;
-        private List<string> arguments = new List<string>();
+
+        private List<string> inputArgs = new List<string>();
 
         private void Start()
         {
@@ -52,29 +56,29 @@ namespace CmdConsole
 
         private void OnValueChanged(string input)
         {
-            List<string> previousArgs = arguments;
-            arguments = Regex.Split(input, @"\s").Where(s => s.Length != 0).ToList<string>();
+            List<string> previousArgs = inputArgs;
+            inputArgs = Regex.Split(input, @"\s").Where(s => s.Length != 0).ToList<string>();
 
-            if (arguments.Any() && !previousArgs.Any()) //If this is the first input
+            if (inputArgs.Any() && !previousArgs.Any()) //If this is the first input
             {
-                previousArgs = arguments;
+                previousArgs = inputArgs;
                 TryParseCommand();
             }
-            else if (new HashSet<string>(arguments).SetEquals(previousArgs))
+            else if (new HashSet<string>(inputArgs).SetEquals(previousArgs))
             {
                 return;
             }
 
-            for (int i = 0; i < arguments.Count; i++)
+            for (int i = 0; i < inputArgs.Count; i++)
             {
                 if (previousArgs.ElementAtOrDefault(i) != null)
                 {
-                    if (arguments[i] != previousArgs[i])
+                    if (inputArgs[i] != previousArgs[i])
                     {
                         if (i == 0)
                         {
                             TryParseCommand();
-                            for (int c = 1; c < arguments.Count; c++)
+                            for (int c = 1; c < inputArgs.Count; c++)
                             {
                                 TryParseArgument(c);
                             }
@@ -96,12 +100,12 @@ namespace CmdConsole
 
         private void TryParseCommand()
         {
-            Debug.Log("Parsing Command <b>" + arguments[0] + "</b>");
+            if (CommandParseDebug) Debug.Log("Parsing Command <b>" + inputArgs[0] + "</b>");
         }
 
         private void TryParseArgument(int index)
         {
-            Debug.Log("Parsing Arg " + index + ": <b>" + arguments[index] + "</b>");
+            if (CommandParseDebug) Debug.Log("Parsing Arg " + index + ": <b>" + inputArgs[index] + "</b>");
         }
 
         private void ShowCompleteOptions()
@@ -111,7 +115,7 @@ namespace CmdConsole
 
         private void ExecuteCommand()
         {
-            Debug.Log("Executed <b>" + arguments[0] + "</b>");
+            Debug.Log("Executed <b>" + inputArgs[0] + "</b>");
         }
 
     }
