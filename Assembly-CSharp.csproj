@@ -51,21 +51,28 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\CmdConsole.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\FlexibleUI\FlexibleDraggableObject.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\FlexibleUI\FlexibleExtensions.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\FlexibleUI\FlexibleResizeHandler.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\Not Implemented\CmdMessage.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\Not Implemented\CmdStylePalette.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\Not Implemented\CmdUtility.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\Not Implemented\Command.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\Not Implemented\CommandRegistry.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\Not Implemented\GlobalVariable.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\Not Implemented\IVariable.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\Not Implemented\Selection.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Code\Not Implemented\Variable.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Default Commands\Cmd_Alpha.cs" />
-     <Compile Include="Assets\CmdConsole V2\CmdCore\Default Global Variables\GlobalVar_Transform.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\_Not Implemented\CmdMessage.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\_Not Implemented\CmdStylePalette.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\CmdConsole.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\CmdConsoleAnimator.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\CmdParser.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\CmdSuggestions.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\Commands\CmdCommandRunner.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\Commands\CmdRegistry.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\Commands\Command.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\Utils\CmdUtility.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\Utils\FlexibleDraggableObject.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\Utils\FlexibleExtensions.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\Utils\FlexibleResizeHandler.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\Utils\ValidArgList.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\Utils\ValidCommandList.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\Variables\IVariable.cs" />
+     <Compile Include="Assets\CmdConsole V2\Default Commands\Cmd_Allepo.cs" />
+     <Compile Include="Assets\CmdConsole V2\Default Commands\Cmd_Alpha.cs" />
+     <Compile Include="Assets\CmdConsole V2\Default Commands\Cmd_Beta.cs" />
+     <Compile Include="Assets\CmdConsole V2\Default Commands\Cmd_Gamma.cs" />
+     <Compile Include="Assets\CmdConsole V2\Default Commands\Cmd_Get.cs" />
+     <Compile Include="Assets\CmdConsole V2\Default Global Variables\GlobalVar_Transform.cs" />
      <Compile Include="Assets\CmdConsole_Deprecated\CmdCore\Code\BaseCommand.cs" />
      <Compile Include="Assets\CmdConsole_Deprecated\CmdCore\Code\BaseParam.cs" />
      <Compile Include="Assets\CmdConsole_Deprecated\CmdCore\Code\Console.cs" />

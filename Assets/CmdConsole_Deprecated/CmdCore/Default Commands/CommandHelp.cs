@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using CmdConsole;
 
-public class CommandHelp : BaseCommand
+public class CommandHelp //: BaseCommand
 {
+    /*
     public CommandHelp()
     {
         Name = "help";
@@ -59,7 +60,8 @@ public class CommandHelp : BaseCommand
                 message.Add("No command found.", CMLineType.Warning);
                 return message;
             }
-        }*/
-    }
+        }
+     }
+    */
 }
 

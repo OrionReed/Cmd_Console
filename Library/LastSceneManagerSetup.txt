@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/CmdConsole V1/Example Scene/CmdConsole.unity
+- path: Assets/CmdConsole V2/Example Scene/CmdConsole.unity
   isLoaded: 1
   isActive: 1
