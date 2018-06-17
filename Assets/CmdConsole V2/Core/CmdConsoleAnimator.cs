@@ -6,18 +6,30 @@ namespace CmdConsole
     [RequireComponent(typeof(CmdConsole))]
     public class CmdConsoleAnimator : MonoBehaviour
     {
-        [SerializeField] private float toggleSpeed = 0.15f;
+        [SerializeField] private float toggleSpeed = 0.1f;
         [SerializeField] private KeyCode toggleConsole = KeyCode.BackQuote;
         [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField] private bool startVisible = true;
+
         private bool consoleVisible = false;
         private IEnumerator CoTransition;
         private CmdConsole console;
 
+        public void SetVisibility(bool show)
+        {
+            if (show) Transition(toggleSpeed, true);
+            else Transition(toggleSpeed, false);
+        }
+        public void SetVisibilityImmediate(bool show)
+        {
+            if (show) Transition(0, true);
+            else Transition(0, false);
+        }
+
         private void Start()
         {
             console = GetComponent<CmdConsole>();
-            SetVisibility(startVisible);
+            SetVisibilityImmediate(startVisible);
         }
 
         private void Update()
@@ -26,12 +38,6 @@ namespace CmdConsole
             {
                 SetVisibility(!consoleVisible);
             }
-        }
-
-        public void SetVisibility(bool show, bool immediate = false)
-        {
-            if (show) Transition(immediate ? 0 : toggleSpeed, true);
-            else Transition(immediate ? 0 : toggleSpeed, false);
         }
 
         private void Transition(float timeForEffect, bool setVisibility)
