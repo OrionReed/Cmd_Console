@@ -9,14 +9,13 @@ public class Cmd_Two : CommandBase
         Name = "PlayTwo";
     }
 
-    public override CmdMessage ExecuteDefault()
+    public override void ExecuteDefault()
     {
-        Debug.Log("Executed PlayTwo");
-        return new CmdMessage("Executed PlayTwo");
+        CmdLog.Log(new CmdMessage("Executed PlayTwo"));
     }
 
-    public override CmdMessage ExecuteWithArguments(List<object> arguments)
+    public override void ExecuteWithArguments(List<object> arguments)
     {
-        return new CmdMessage("No Args Needed...");
+        CmdLog.Log(new CmdMessage("No Args Needed..."));
     }
 }

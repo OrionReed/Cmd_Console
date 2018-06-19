@@ -16,21 +16,22 @@ public class Cmd_PlayerHealth : CommandBase
         };
     }
 
-    public override CmdMessage ExecuteDefault()
+    public override void ExecuteDefault()
     {
-        return new CmdMessage("Command Needs Arguments");
+        CmdLog.Log(new CmdMessage("Dis cummand nids argooments"));
     }
 
-    public override CmdMessage ExecuteWithArguments(List<object> arguments)
+    public override void ExecuteWithArguments(List<object> arguments)
     {
         Player player = (Player)arguments[0];
         player.Health += (float)arguments[1];
-        Debug.Log(
-            "Added <b>" +
-            (float)arguments[1] +
-            "</b> Health to <b>" +
-            player.Name +
-            "</b>");
-        return new CmdMessage(" ... ");
+        CmdMessage message = new CmdMessage()
+        {
+            {"Added ", CMStyle.Default},
+            {((float)arguments[1]).ToString(), CMStyle.Emphasis},
+            {" health to ", CMStyle.Default},
+            {player.Name, CMStyle.Emphasis}
+        };
+        CmdLog.Log(message);
     }
 }

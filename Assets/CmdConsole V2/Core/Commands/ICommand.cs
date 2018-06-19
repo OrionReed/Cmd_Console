@@ -8,7 +8,7 @@ namespace CmdConsole
         string Alias { get; }
         string Description { get; }
         List<IVar> Variables { get; }
-        CmdMessage ExecuteDefault();
-        CmdMessage ExecuteWithArguments(List<object> arguments);
+        void ExecuteDefault();
+        void ExecuteWithArguments(List<object> arguments);
     }
 }

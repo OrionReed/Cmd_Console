@@ -9,14 +9,13 @@ public class Cmd_Three : CommandBase
         Name = "PlayThree";
     }
 
-    public override CmdMessage ExecuteDefault()
+    public override void ExecuteDefault()
     {
-        Debug.Log("Executed PlayThree");
-        return new CmdMessage("Executed PlayThree");
+        CmdLog.Log(new CmdMessage("Executed PlayThree"));
     }
 
-    public override CmdMessage ExecuteWithArguments(List<object> arguments)
+    public override void ExecuteWithArguments(List<object> arguments)
     {
-        return new CmdMessage("No Args Needed...");
+        CmdLog.Log(new CmdMessage("Executed PlayThree with Args"));
     }
 }

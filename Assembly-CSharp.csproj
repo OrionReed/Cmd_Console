@@ -58,6 +58,7 @@
      <Compile Include="Assets\CmdConsole V2\Core\Arguments\IArg.cs" />
      <Compile Include="Assets\CmdConsole V2\Core\CmdConsole.cs" />
      <Compile Include="Assets\CmdConsole V2\Core\CmdConsoleAnimator.cs" />
+     <Compile Include="Assets\CmdConsole V2\Core\CmdLog.cs" />
      <Compile Include="Assets\CmdConsole V2\Core\CmdRegistry.cs" />
      <Compile Include="Assets\CmdConsole V2\Core\Commands\CommandBase.cs" />
      <Compile Include="Assets\CmdConsole V2\Core\Commands\ICommand.cs" />

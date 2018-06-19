@@ -9,14 +9,14 @@ public class Cmd_Gamma : CommandBase
         Name = "Gamma";
     }
 
-    public override CmdMessage ExecuteDefault()
+    public override void ExecuteDefault()
     {
         Debug.Log("Executed Gamma!");
-        return new CmdMessage("Executed Gamma!");
+        CmdLog.Log(new CmdMessage("Executed Gamma!"));
     }
 
-    public override CmdMessage ExecuteWithArguments(List<object> arguments)
+    public override void ExecuteWithArguments(List<object> arguments)
     {
-        return new CmdMessage("No Args Needed...");
+        CmdLog.Log(new CmdMessage("No Args Needed"));
     }
 }
