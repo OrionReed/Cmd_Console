@@ -20,16 +20,18 @@ namespace CmdConsole
         [SerializeField] private Color ColHighlight;
         [SerializeField] private Color ColFailedParse;
         [SerializeField] private Color ColClear;
-        [SerializeField] private float charWidth = 10;
-        [SerializeField] private float originalX;
-        [SerializeField] private float originalY;
 
+        private float originalX;
+        private float originalY;
+
+        private const float charWidth = 10;
         private CanvasGroup SuggestionPanelCanvas;
-        private int focus = 0;
         private int caretIndex = 0;
         private List<string> latestInput = new List<string>();
-        private IArg command = new Arg_Command();
         private List<IArg> arguments = new List<IArg>();
+        private IArg focusedArg;
+        private int focusOffset;
+        private IArg command = new Arg_Command();
 
         private void Start()
         {
@@ -52,9 +54,9 @@ namespace CmdConsole
                 UpdateFocusByCaret();
             }
             if (Input.GetKeyDown(IncrementOption))
-                Increment();
+                IncrementCurrent();
             if (Input.GetKeyDown(DecrementOption))
-                Decrement();
+                DecrementCurrent();
             if (Input.GetKeyDown(Autocomplete))
                 TryAutocomplete();
         }
@@ -141,18 +143,9 @@ namespace CmdConsole
 
         private void UpdateOptionsWindow()
         {
-            suggestionText.text = "";
-            if (focus == 0)
+            if (focusedArg != null)
             {
-                suggestionText.text = GetOptionsList(command);
-            }
-            else
-            {
-                int argFocus = focus - 1;
-                if (arguments.ElementAtOrDefault(argFocus) != null)
-                {
-                    suggestionText.text = GetOptionsList(arguments[argFocus]);
-                }
+                suggestionText.text = GetOptionsList(focusedArg);
             }
             SuggestionPanelCanvas.alpha = suggestionText.text == "" ? 0 : 1;
         }
@@ -200,16 +193,8 @@ namespace CmdConsole
 
         private void TryAutocomplete()
         {
-            if (focus <= 0)
-            {
-                if (command.CurrentKey != null)
-                    command.SetInput(command.CurrentKey);
-            }
-            else
-            {
-                if (arguments[focus - 1].CurrentKey != null)
-                    arguments[focus - 1].SetInput(arguments[focus - 1].CurrentKey);
-            }
+            if (focusedArg.CurrentKey != null)
+                focusedArg.SetInput(focusedArg.CurrentKey);
             UpdateSyntaxHighlights();
         }
 
@@ -259,49 +244,36 @@ namespace CmdConsole
 
         private void UpdateFocusByCaret()
         {
-            if (caretIndex <= command.Input.Length)
+            int counter = command.Input.Length + 1;
+            if (counter > caretIndex)
             {
-                focus = 0;
-                SuggestionPanel.localPosition = new Vector2(originalX + (caretIndex * charWidth), originalY);
+                focusedArg = command;
                 return;
             }
-            int counter = command.Input.Length + 1;
+            focusOffset = counter;
             for (int i = 0; i < arguments.Count; i++)
             {
                 counter += arguments[i].Input.Length + 1;
                 if (counter > caretIndex)
                 {
-                    focus = i + 1;
-                    SuggestionPanel.localPosition = new Vector2(originalX + (caretIndex * charWidth), originalY);
+                    focusedArg = arguments[i];
+                    SuggestionPanel.localPosition = new Vector2(originalX + (focusOffset * charWidth), originalY);
                     UpdateOptionsWindow();
                     return;
                 }
+                focusOffset = counter;
             }
         }
 
-        private void Increment()
+        private void IncrementCurrent()
         {
-            if (focus <= 0)
-            {
-                command.IncrementOption();
-            }
-            else
-            {
-                arguments.ElementAtOrDefault(focus - 1).IncrementOption();
-            }
+            focusedArg.IncrementOption();
             UpdateOptionsWindow();
         }
 
-        private void Decrement()
+        private void DecrementCurrent()
         {
-            if (focus <= 0)
-            {
-                command.DecrementOption();
-            }
-            else
-            {
-                arguments.ElementAtOrDefault(focus - 1).DecrementOption();
-            }
+            focusedArg.DecrementOption();
             UpdateOptionsWindow();
         }
     }
