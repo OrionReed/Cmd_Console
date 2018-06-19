@@ -9,7 +9,7 @@ namespace CmdConsole
     {
         public int PartCount { get; set; }
         public Type Type { get; set; }
-        public string InputString { get; set; }
+        public string InputString { get; set; } = "";
         public string CurrentKey
         {
             get

@@ -3,5 +3,5 @@
 public class Player : MonoBehaviour
 {
     public string Name = "DefaultName";
-    public int Health = 5;
+    public float Health = 5;
 }

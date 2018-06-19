@@ -14,9 +14,11 @@ namespace CmdConsole
         [SerializeField] private TMP_Text suggestionText;
         [SerializeField] private TMP_Text autocompleteText;
         [SerializeField] private TMP_Text logText;
-        [SerializeField] private KeyCode IncrementOptionKey;
-        [SerializeField] private KeyCode DecrementOptionKey;
+        [SerializeField] private KeyCode IncrementOption;
+        [SerializeField] private KeyCode DecrementOption;
+        [SerializeField] private KeyCode Autocomplete;
         [SerializeField] private Color ColHighlight;
+        [SerializeField] private Color ColFailedParse;
         [SerializeField] private Color ColClear;
 
         private int focus = 0;
@@ -32,6 +34,8 @@ namespace CmdConsole
             inputField.onValueChanged.AddListener(OnInputUpdate);
             inputField.onSubmit.AddListener(OnSubmit);
             CmdRegistry.Init();
+            command.SetInputString("");
+            UpdateOptionsWindow();
         }
         private void Update()
         {
@@ -40,11 +44,14 @@ namespace CmdConsole
                 caretIndex = inputField.caretPosition;
                 UpdateFocusByCaret();
             }
-            if (Input.GetKeyDown(IncrementOptionKey))
-                IncrementOption();
-            if (Input.GetKeyDown(DecrementOptionKey))
-                DecrementOption();
+            if (Input.GetKeyDown(IncrementOption))
+                Increment();
+            if (Input.GetKeyDown(DecrementOption))
+                Decrement();
+            if (Input.GetKeyDown(Autocomplete))
+                TryAutocomplete();
         }
+
         private char OnValidateInput(string text, int charIndex, char addedChar)
         {
             if (char.IsLetterOrDigit(addedChar) || addedChar == '-' || addedChar == '.')
@@ -111,7 +118,10 @@ namespace CmdConsole
                         for (int x = 0; x < currentCommand.Variables[a].Parts; x++)
                         {
                             if (newInput.Any())
+                            {
                                 argInput += newInput.First() + " ";
+                                newInput.RemoveAt(0);
+                            }
                             else
                                 break;
                         }
@@ -121,7 +131,6 @@ namespace CmdConsole
             }
             UpdateOptionsWindow();
         }
-
 
         private void UpdateOptionsWindow()
         {
@@ -189,6 +198,47 @@ namespace CmdConsole
             }
         }
 
+        private void TryAutocomplete()
+        {
+            if (focus <= 0)
+            {
+                if (command.CurrentKey != null)
+                    command.SetInputString(command.CurrentKey);
+            }
+            else
+            {
+                if (arguments[focus - 1].CurrentKey != null)
+                    arguments[focus - 1].SetInputString(arguments[focus - 1].CurrentKey);
+            }
+            UpdateSyntaxHighlights();
+        }
+
+        private void UpdateSyntaxHighlights()
+        {
+            string inputWithHighlights = "";
+            if (String.Compare(command.InputString, command.CurrentKey, true) == 0)
+            {
+                inputWithHighlights += command.InputString.ColorString(ColFailedParse) + " ";
+            }
+            else
+            {
+                inputWithHighlights += command.InputString + " ";
+            }
+
+            for (int i = 0; i < arguments.Count; i++)
+            {
+                if (String.Compare(arguments[i].InputString, arguments[i].CurrentKey, true) == 0)
+                {
+                    inputWithHighlights += arguments[i].InputString.ColorString(ColFailedParse) + " ";
+                }
+                else
+                {
+                    inputWithHighlights += arguments[i].InputString + " ";
+                }
+            }
+            inputField.text = inputWithHighlights;
+        }
+
         private void OnSubmit(string s)
         {
             if (command.GetOptions().Any())
@@ -196,7 +246,12 @@ namespace CmdConsole
                 ICommand com = (ICommand)command.CurrentValue;
                 if (arguments.Any())
                 {
-                    // EXEC WITH ARGS
+                    List<object> args = new List<object>();
+                    for (int i = 0; i < arguments.Count; i++)
+                    {
+                        args.Add(arguments[i].CurrentValue);
+                    }
+                    com.ExecuteWithArguments(args);
                 }
                 com.ExecuteDefault();
             }
@@ -218,12 +273,13 @@ namespace CmdConsole
                 {
                     focus = i + 1;
                     Debug.Log("Focusing on Arg: " + (focus - 1));
+                    UpdateOptionsWindow();
                     return;
                 }
             }
         }
 
-        private void IncrementOption()
+        private void Increment()
         {
             if (focus <= 0)
             {
@@ -236,7 +292,7 @@ namespace CmdConsole
             UpdateOptionsWindow();
         }
 
-        private void DecrementOption()
+        private void Decrement()
         {
             if (focus <= 0)
             {

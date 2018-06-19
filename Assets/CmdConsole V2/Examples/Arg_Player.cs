@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Linq;
 using CmdConsole;
+using System;
 
 public class Arg_Player : ArgBase
 {
@@ -22,7 +23,7 @@ public class Arg_Player : ArgBase
 
     public override SortedList<string, object> GetOptions()
     {
-        var searchedPlayers = allPlayers.Where(p => p.Key.StartsWith(InputString)).ToList();
+        var searchedPlayers = allPlayers.Where(p => p.Key.StartsWith(InputString, StringComparison.InvariantCultureIgnoreCase)).ToList();
         if (searchedPlayers.Count > 0)
         {
             Options.Clear();

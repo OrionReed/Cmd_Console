@@ -11,7 +11,7 @@ public class Cmd_PlayerHealth : CommandBase
         Variables = new List<IVar>
         {
             new Var<Arg_Player>("Player"),
-            new Var<int>("HealthBoost")
+            new Var<float>("HealthBoost")
         };
     }
 
@@ -23,10 +23,10 @@ public class Cmd_PlayerHealth : CommandBase
     public override CmdMessage ExecuteWithArguments(List<object> arguments)
     {
         Player player = (Player)arguments[0];
-        player.Health += (int)arguments[1];
+        player.Health += (float)arguments[1];
         Debug.Log(
             "Added <b>" +
-            (int)arguments[1] +
+            (float)arguments[1] +
             "</b> Health to <b>" +
             player.Name +
             "</b>");
