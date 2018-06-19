@@ -7,25 +7,11 @@ namespace CmdConsole
 {
     public abstract class ArgBase : IArg
     {
-        public int PartCount { get; set; }
-        public Type Type { get; set; }
-        public string InputString { get; set; } = "";
-        public string CurrentKey
-        {
-            get
-            {
-                Clamp();
-                return GetOptions().ElementAtOrDefault(OptionIndex).Key;
-            }
-        }
-        public object CurrentValue
-        {
-            get
-            {
-                Clamp();
-                return GetOptions().ElementAtOrDefault(OptionIndex).Value;
-            }
-        }
+        public int Parts { get; protected set; }
+        public Type Type { get; protected set; }
+        public string Input { get; protected set; } = "";
+        public string CurrentKey { get { Clamp(); return GetOptions().ElementAtOrDefault(OptionIndex).Key; } }
+        public object CurrentValue { get { Clamp(); return GetOptions().ElementAtOrDefault(OptionIndex).Value; } }
 
         public SortedList<string, object> Options = new SortedList<string, object>();
         private int OptionIndex = 0;
@@ -36,12 +22,18 @@ namespace CmdConsole
         public ArgBase(Type type)
         {
             Type = type;
+            Parts = CmdUtility.GetTypeParts(Type);
         }
-        public void SetInputString(string input)
+        public void SetInput(string input)
         {
-            InputString = input;
+            Input = input;
         }
 
+        public SortedList<string, object> GetOptions(string newInput)
+        {
+            Input = newInput;
+            return GetOptions();
+        }
         public abstract SortedList<string, object> GetOptions();
 
         public abstract void Init();

@@ -6,6 +6,5 @@ namespace CmdConsole
     {
         string Name { get; set; }
         Type Type { get; set; }
-        int Parts { get; set; }
     }
 }

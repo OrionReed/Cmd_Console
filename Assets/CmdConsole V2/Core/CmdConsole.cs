@@ -10,7 +10,7 @@ namespace CmdConsole
     public class CmdConsole : MonoBehaviour
     {
         public TMP_InputField inputField { get; private set; }
-        [SerializeField] private CanvasGroup SuggestionPanel;
+        [SerializeField] private RectTransform SuggestionPanel;
         [SerializeField] private TMP_Text suggestionText;
         [SerializeField] private TMP_Text autocompleteText;
         [SerializeField] private TMP_Text logText;
@@ -20,7 +20,11 @@ namespace CmdConsole
         [SerializeField] private Color ColHighlight;
         [SerializeField] private Color ColFailedParse;
         [SerializeField] private Color ColClear;
+        [SerializeField] private float charWidth = 10;
+        [SerializeField] private float originalX;
+        [SerializeField] private float originalY;
 
+        private CanvasGroup SuggestionPanelCanvas;
         private int focus = 0;
         private int caretIndex = 0;
         private List<string> latestInput = new List<string>();
@@ -29,12 +33,15 @@ namespace CmdConsole
 
         private void Start()
         {
+            originalX = SuggestionPanel.localPosition.x;
+            originalY = SuggestionPanel.localPosition.y;
+            SuggestionPanelCanvas = SuggestionPanel.GetComponent<CanvasGroup>();
             inputField = GetComponentInChildren<TMP_InputField>();
             inputField.onValidateInput = OnValidateInput;
             inputField.onValueChanged.AddListener(OnInputUpdate);
             inputField.onSubmit.AddListener(OnSubmit);
             CmdRegistry.Init();
-            command.SetInputString("");
+            command.SetInput("");
             UpdateOptionsWindow();
         }
         private void Update()
@@ -76,9 +83,9 @@ namespace CmdConsole
             List<string> newInput = Regex.Split(newInputString, @"\s").Where(s => s.Length != 0).ToList<string>();
 
             if (newInput.ElementAtOrDefault(0) == null)
-                command.SetInputString("");
-            else if (newInput[0] != command.InputString)
-                command.SetInputString(newInput[0]);
+                command.SetInput("");
+            else if (newInput[0] != command.Input)
+                command.SetInput(newInput[0]);
 
             if (latestInput != newInput)
                 latestInput = newInput;
@@ -111,11 +118,11 @@ namespace CmdConsole
                     {
                         if (!newInput.Any())
                         {
-                            arguments[a].SetInputString("");
+                            arguments[a].SetInput("");
                             continue;
                         }
                         string argInput = "";
-                        for (int x = 0; x < currentCommand.Variables[a].Parts; x++)
+                        for (int x = 0; x < arguments[a].Parts; x++)
                         {
                             if (newInput.Any())
                             {
@@ -125,7 +132,7 @@ namespace CmdConsole
                             else
                                 break;
                         }
-                        arguments[a].SetInputString(argInput.Trim());
+                        arguments[a].SetInput(argInput.Trim());
                     }
                 }
             }
@@ -147,7 +154,7 @@ namespace CmdConsole
                     suggestionText.text = GetOptionsList(arguments[argFocus]);
                 }
             }
-            SuggestionPanel.alpha = suggestionText.text == "" ? 0 : 1;
+            SuggestionPanelCanvas.alpha = suggestionText.text == "" ? 0 : 1;
         }
 
         private string GetOptionsList(IArg arg)
@@ -189,13 +196,6 @@ namespace CmdConsole
                     arguments.Last().Init();
                 }
             }
-            Debug.Log("<b>Rebuilding Command Args:</b>");
-            foreach (IArg arg in arguments)
-            {
-                Debug.Log("<b>Type: </b>" + arg.Type);
-                if (!String.IsNullOrEmpty(arg.InputString))
-                    Debug.Log("<b>With input: </b>" + arg.InputString);
-            }
         }
 
         private void TryAutocomplete()
@@ -203,19 +203,19 @@ namespace CmdConsole
             if (focus <= 0)
             {
                 if (command.CurrentKey != null)
-                    command.SetInputString(command.CurrentKey);
+                    command.SetInput(command.CurrentKey);
             }
             else
             {
                 if (arguments[focus - 1].CurrentKey != null)
-                    arguments[focus - 1].SetInputString(arguments[focus - 1].CurrentKey);
+                    arguments[focus - 1].SetInput(arguments[focus - 1].CurrentKey);
             }
             UpdateSyntaxHighlights();
         }
 
         private void UpdateSyntaxHighlights()
         {
-            string inputWithHighlights = "";
+            /* string inputWithHighlights = "";
             if (String.Compare(command.InputString, command.CurrentKey, true) == 0)
             {
                 inputWithHighlights += command.InputString.ColorString(ColFailedParse) + " ";
@@ -236,7 +236,7 @@ namespace CmdConsole
                     inputWithHighlights += arguments[i].InputString + " ";
                 }
             }
-            inputField.text = inputWithHighlights;
+            inputField.text = inputWithHighlights; */
         }
 
         private void OnSubmit(string s)
@@ -259,20 +259,20 @@ namespace CmdConsole
 
         private void UpdateFocusByCaret()
         {
-            if (caretIndex <= command.InputString.Length)
+            if (caretIndex <= command.Input.Length)
             {
-                Debug.Log("Focusing on Command");
                 focus = 0;
+                SuggestionPanel.localPosition = new Vector2(originalX + (caretIndex * charWidth), originalY);
                 return;
             }
-            int counter = command.InputString.Length + 1;
+            int counter = command.Input.Length + 1;
             for (int i = 0; i < arguments.Count; i++)
             {
-                counter += arguments[i].InputString.Length + 1;
+                counter += arguments[i].Input.Length + 1;
                 if (counter > caretIndex)
                 {
                     focus = i + 1;
-                    Debug.Log("Focusing on Arg: " + (focus - 1));
+                    SuggestionPanel.localPosition = new Vector2(originalX + (caretIndex * charWidth), originalY);
                     UpdateOptionsWindow();
                     return;
                 }

@@ -14,10 +14,10 @@ namespace CmdConsole
 
         public override SortedList<string, object> GetOptions()
         {
-            if (InputString.CanParse(Type))
+            if (Input.CanParse(Type))
             {
                 Options.Clear();
-                Options.Add(InputString, InputString.Parse(Type));
+                Options.Add(Input, Input.Parse(Type));
                 return Options;
             }
             else

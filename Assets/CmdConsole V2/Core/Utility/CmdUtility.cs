@@ -22,20 +22,22 @@ namespace CmdConsole
             return System.Convert.ChangeType(input, toType);
         }
 
-        public static int GetArgPartCount<T>()
+        public static int GetTypeParts(Type type)
         {
-            if (typeof(T).IsValueType)
+            if (type.IsValueType)
             {
-                return Regex.Split(default(T).ToString(), @"\s").Length;
+                Debug.Log("Parts for Type: " + type.ToString() + " are: " + Regex.Split(Activator.CreateInstance(type).ToString(), @"\s").Length);
+                return Regex.Split(Activator.CreateInstance(type).ToString(), @"\s").Length;
             }
-            else if (typeof(T).IsSubclassOf(typeof(ArgBase)))
+            else if (type.IsSubclassOf(typeof(ArgBase)))
             {
-                var arg = (T)Activator.CreateInstance(typeof(T)) as ArgBase;
-                return arg.PartCount;
+                var arg = Activator.CreateInstance(type) as ArgBase;
+                Debug.Log("Parts for Type: " + type.ToString() + " are: " + arg.Parts);
+                return arg.Parts;
             }
             else
             {
-                Debug.LogWarning("PartCount defaulting to 1 for unknown type: " + typeof(T).ToString());
+                Debug.LogWarning("PartCount defaulting to 1 for unknown type: " + type.ToString());
                 return 1;
             }
         }

@@ -9,7 +9,7 @@ namespace CmdConsole
     {
         public Arg_Command()
         {
-            PartCount = 1;
+            Parts = 1;
             Type = typeof(ICommand);
         }
 
@@ -21,7 +21,7 @@ namespace CmdConsole
             List<KeyValuePair<string, ICommand>> coms;
 
             coms = CmdRegistry.Commands.Where(c => c.Key.StartsWith(
-                InputString, StringComparison.InvariantCultureIgnoreCase))
+                Input, StringComparison.InvariantCultureIgnoreCase))
                 .ToList();
 
             foreach (KeyValuePair<string, ICommand> foundCommand in coms)

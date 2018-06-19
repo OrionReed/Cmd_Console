@@ -9,7 +9,7 @@ public class Arg_Player : ArgBase
     private static SortedList<string, Player> allPlayers;
     public Arg_Player()
     {
-        PartCount = 1;
+        Parts = 1;
         Type = typeof(Player);
     }
 
@@ -23,7 +23,7 @@ public class Arg_Player : ArgBase
 
     public override SortedList<string, object> GetOptions()
     {
-        var searchedPlayers = allPlayers.Where(p => p.Key.StartsWith(InputString, StringComparison.InvariantCultureIgnoreCase)).ToList();
+        var searchedPlayers = allPlayers.Where(p => p.Key.StartsWith(Input, StringComparison.InvariantCultureIgnoreCase)).ToList();
         if (searchedPlayers.Count > 0)
         {
             Options.Clear();

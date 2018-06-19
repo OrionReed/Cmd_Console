@@ -7,7 +7,7 @@ public class Arg_PositiveInt : ArgBase
 {
     public Arg_PositiveInt()
     {
-        PartCount = 1;
+        Parts = 1;
         Type = typeof(int);
     }
 
@@ -15,10 +15,10 @@ public class Arg_PositiveInt : ArgBase
 
     public override SortedList<string, object> GetOptions()
     {
-        if (InputString.CanParse(typeof(int)) && (int)InputString.Parse(typeof(int)) > 0)
+        if (Input.CanParse(typeof(int)) && (int)Input.Parse(typeof(int)) > 0)
         {
             Options.Clear();
-            Options.Add(InputString, InputString.Parse(typeof(int)));
+            Options.Add(Input, Input.Parse(typeof(int)));
             return Options;
         }
         else
