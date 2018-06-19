@@ -14,9 +14,9 @@ namespace CmdConsole
             {
                 string[] strings = Regex.Split(input, @"\s");
                 return new Vector3(
-                (float)strings[0].Parse(typeof(float)),
-                (float)strings[1].Parse(typeof(float)),
-                (float)strings[2].Parse(typeof(float)));
+                (float)strings.ElementAtOrDefault(0).Parse(typeof(float)),
+                (float)strings.ElementAtOrDefault(1).Parse(typeof(float)),
+                (float)strings.ElementAtOrDefault(2).Parse(typeof(float)));
             }
 
             return System.Convert.ChangeType(input, toType);

@@ -4,47 +4,56 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System;
+using System.Text;
 
 namespace CmdConsole
 {
     public class CmdConsole : MonoBehaviour
     {
         public TMP_InputField inputField { get; private set; }
-        [SerializeField] private RectTransform OptionsPanel;
-        [SerializeField] private TMP_Text suggestionText;
-        [SerializeField] private TMP_Text autocompleteText;
-        [SerializeField] private TMP_Text logText;
+
+        [SerializeField] CmdStylePalette stylePalette;
         [SerializeField] private KeyCode IncrementOption;
         [SerializeField] private KeyCode DecrementOption;
         [SerializeField] private KeyCode Autocomplete;
-        [SerializeField] private Color ColHighlight;
-        [SerializeField] private Color ColFailedParse;
-        [SerializeField] private Color ColClear;
+        [SerializeField] private RectTransform OptionsPanel;
+        [SerializeField] private TMP_Text logText;
 
         private float originalX;
         private float originalY;
 
-        private const float charWidth = 14.95f;
+        private const float charWidth = 15f;
+        private TMP_Text optionText;
+        private TMP_SelectionCaret caret;
+        private Canvas caretCanvas;
         private CanvasGroup SuggestionPanelCanvas;
         private int caretIndex = 0;
         private List<string> latestInput = new List<string>();
         private List<IArg> arguments = new List<IArg>();
         private IArg focusedArg;
-        private int focusOffset;
+        private int focusCharOffset;
         private IArg command = new Arg_Command();
 
         private void Start()
         {
+            inputField = GetComponentInChildren<TMP_InputField>();
+            optionText = OptionsPanel.GetComponentInChildren<TMP_Text>();
+            caret = inputField.GetComponentInChildren<TMP_SelectionCaret>();
+            caretCanvas = caret.gameObject.AddComponent<Canvas>();
+            caretCanvas.overrideSorting = true;
+            caretCanvas.sortingOrder = 3;
+            SuggestionPanelCanvas = OptionsPanel.GetComponent<CanvasGroup>();
             originalX = OptionsPanel.localPosition.x;
             originalY = OptionsPanel.localPosition.y;
-            SuggestionPanelCanvas = OptionsPanel.GetComponent<CanvasGroup>();
-            inputField = GetComponentInChildren<TMP_InputField>();
-            inputField.onValidateInput = OnValidateInput;
+            inputField.onValidateInput = OnValidate;
             inputField.onValueChanged.AddListener(OnInputUpdate);
             inputField.onSubmit.AddListener(OnSubmit);
+            optionText.text = "";
+
+
             CmdRegistry.Init();
             command.SetInput("");
-            UpdateOptionsWindow();
+            RedrawOptionsWindow();
         }
         private void Update()
         {
@@ -52,22 +61,23 @@ namespace CmdConsole
             {
                 caretIndex = inputField.caretPosition;
                 UpdateFocus();
+                RedrawOptionsWindow();
             }
             if (Input.GetKeyDown(IncrementOption))
             {
                 IncrementCurrent();
-                UpdateOptionsWindow();
+                RedrawOptionsWindow();
             }
             if (Input.GetKeyDown(DecrementOption))
             {
                 DecrementCurrent();
-                UpdateOptionsWindow();
+                RedrawOptionsWindow();
             }
             if (Input.GetKeyDown(Autocomplete))
                 TryAutocomplete();
         }
 
-        private char OnValidateInput(string text, int charIndex, char addedChar)
+        private char OnValidate(string text, int charIndex, char addedChar)
         {
             if (char.IsLetterOrDigit(addedChar) || addedChar == '-' || addedChar == '.')
             {
@@ -144,35 +154,75 @@ namespace CmdConsole
                     }
                 }
             }
-            UpdateOptionsWindow();
+            RedrawOptionsWindow();
         }
 
-        private void UpdateOptionsWindow()
+        private void OnSubmit(string s)
+        {
+            if (command.CurrentValue == null)
+                return;
+
+            if (arguments.Any())
+            {
+                try
+                {
+                    ((ICommand)command.CurrentValue).ExecuteWithArguments(arguments.Select(a => a.CurrentValue).ToList());
+                }
+                catch (NullReferenceException)
+                {
+                    Debug.Log("Command Args do not match command");
+                }
+                inputField.text = "";
+                return;
+            }
+            ((ICommand)command.CurrentValue).ExecuteDefault();
+            inputField.text = "";
+        }
+
+        private void RedrawOptionsWindow()
         {
             if (focusedArg != null)
-            {
-                suggestionText.text = GetOptionsList(focusedArg);
-            }
-            SuggestionPanelCanvas.alpha = suggestionText.text == "" ? 0 : 1;
-            OptionsPanel.localPosition = new Vector2(originalX + (focusOffset * charWidth), originalY);
+                optionText.text = GetOptionsList(focusedArg);
+            else
+                optionText.text = "";
+
+            SuggestionPanelCanvas.alpha = optionText.text == "" ? 0 : 1;
+            inputField.caretColor = optionText.text == "" ? stylePalette.CaretDark : stylePalette.CaretLight;
+            OptionsPanel.localPosition = new Vector2(originalX + (focusCharOffset * charWidth), originalY);
+        }
+
+        private void RedrawInputText()
+        {
+            inputField.text = command.Input + " " + String.Join(" ", arguments.Select(a => a.Input).Where(i => i != "").ToArray());
+            if (inputField.text.Last() != ' ')
+                inputField.text += " ";
+            inputField.MoveTextEnd(false);
         }
 
         private string GetOptionsList(IArg arg)
         {
-            string options = "";
+            StringBuilder options = new StringBuilder("");
             if (arg.CurrentValue == null)
-                return options;
+                return options.ToString();
 
             for (int i = arg.GetOptions().Count - 1; i >= 0; i--)
             {
-                if (arg.GetOptions().ElementAt(i).Value == arg.CurrentValue)
-                    options += arg.GetOptions().ElementAt(i).Key.ColorString(ColHighlight) + "\n";
-                else if (i == 0)
-                    options += arg.GetOptions().ElementAt(i).Key.ColorString(ColClear) + "\n";
+                if (i == 0)
+                {
+                    options.Append(arg.Input.ColorString(stylePalette.Emphasis) + arg.CurrentKey.Remove(0, arg.Input.Length).ColorString(stylePalette.Autocomplete) + "\n");
+                    continue;
+                }
+                if (arg.GetOptionAtIndex(i).Key == arg.CurrentKey)
+                {
+                    options.Append(arg.GetOptionAtIndex(i).Key.ColorString(stylePalette.Confirm) + "\n");
+                    continue;
+                }
                 else
-                    options += arg.GetOptions().ElementAt(i).Key + "\n";
+                {
+                    options.Append(arg.GetOptionAtIndex(i).Key.ColorString(stylePalette.Default) + "\n");
+                }
             }
-            return options;
+            return options.ToString();
         }
 
         private void RebuildArgs(ICommand commandToBuild)
@@ -196,48 +246,12 @@ namespace CmdConsole
         private void TryAutocomplete()
         {
             if (focusedArg.CurrentKey != null)
+            {
                 focusedArg.SetInput(focusedArg.CurrentKey);
-            UpdateSyntaxHighlights();
-        }
-
-        private void UpdateSyntaxHighlights()
-        {
-            /* string inputWithHighlights = "";
-            if (String.Compare(command.InputString, command.CurrentKey, true) == 0)
-            {
-                inputWithHighlights += command.InputString.ColorString(ColFailedParse) + " ";
-            }
-            else
-            {
-                inputWithHighlights += command.InputString + " ";
+                RedrawInputText();
+                RedrawOptionsWindow();
             }
 
-            for (int i = 0; i < arguments.Count; i++)
-            {
-                if (String.Compare(arguments[i].InputString, arguments[i].CurrentKey, true) == 0)
-                {
-                    inputWithHighlights += arguments[i].InputString.ColorString(ColFailedParse) + " ";
-                }
-                else
-                {
-                    inputWithHighlights += arguments[i].InputString + " ";
-                }
-            }
-            inputField.text = inputWithHighlights; */
-        }
-
-        private void OnSubmit(string s)
-        {
-            if (command.CurrentValue == null)
-            {
-                return;
-            }
-            if (arguments.Any())
-            {
-                ((ICommand)command.CurrentValue).ExecuteWithArguments(arguments.Select(a => a.CurrentValue).ToList());
-                return;
-            }
-            ((ICommand)command.CurrentValue).ExecuteDefault();
         }
 
         private void UpdateFocus()
@@ -246,21 +260,21 @@ namespace CmdConsole
             if (counter > caretIndex)
             {
                 focusedArg = command;
+                focusCharOffset = 0;
                 return;
             }
-            focusOffset = counter;
+            focusCharOffset = counter;
             for (int i = 0; i < arguments.Count; i++)
             {
                 counter += arguments[i].Input.Length + 1;
                 if (counter > caretIndex)
                 {
                     focusedArg = arguments[i];
-                    UpdateOptionsWindow();
                     return;
                 }
-                focusOffset = counter;
+                focusCharOffset = counter;
             }
-            UpdateOptionsWindow();
+            focusedArg = null;
         }
 
         private void IncrementCurrent() => focusedArg.IncrementOption();

@@ -22,6 +22,7 @@ namespace CmdConsole
         public abstract void Init();
         public abstract SortedList<string, object> GetOptions();
         public SortedList<string, object> GetOptions(string newInput) { Input = newInput; return GetOptions(); }
+        public KeyValuePair<string, object> GetOptionAtIndex(int index) { return GetOptions().ElementAtOrDefault(index); }
         public void SetInput(string input) { Input = input; }
         public void IncrementOption() { Clamp(); if (OptionIndex < Options.Count - 1) OptionIndex++; }
         public void DecrementOption() { Clamp(); if (OptionIndex > 0) OptionIndex--; }

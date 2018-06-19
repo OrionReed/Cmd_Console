@@ -11,7 +11,8 @@ public class Cmd_PlayerHealth : CommandBase
         Variables = new List<IVar>
         {
             new Var<Arg_Player>("Player"),
-            new Var<float>("HealthBoost")
+            new Var<float>("HealthBoost"),
+            new Var<Vector3>("Vector3")
         };
     }
 

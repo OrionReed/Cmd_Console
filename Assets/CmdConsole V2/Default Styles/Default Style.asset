@@ -11,15 +11,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0805f8ed505049509b600595b93aa47, type: 3}
   m_Name: Default Style
   m_EditorClassIdentifier: 
+  Font: {fileID: 11400000, guid: d8be93693295e4383a676f411910ebd8, type: 2}
   Default: {r: 0.729, g: 0.729, b: 0.729, a: 1}
   Emphasis: {r: 0.901, g: 0.901, b: 0.901, a: 1}
   Warning: {r: 0.639, g: 0.149, b: 0, a: 1}
   Confirm: {r: 0.294, g: 0.603, b: 0.176, a: 1}
   Object: {r: 0.882, g: 0.807, b: 0.717, a: 1}
   System: {r: 0.341, g: 0.341, b: 0.341, a: 1}
-  MultipartColors:
-  - {r: 0.37, g: 0.51, b: 1, a: 1}
-  - {r: 0.557, g: 0.75, b: 1, a: 1}
-  Font: {fileID: 11400000, guid: d8be93693295e4383a676f411910ebd8, type: 2}
   PrefixDefault: 
   PrefixWarning: '[!]'
+  ParseWarning: {r: 0.639, g: 0.149, b: 0, a: 1}
+  Autocomplete: {r: 0.4716981, g: 0.4716981, b: 0.4716981, a: 1}

@@ -11,6 +11,7 @@ namespace CmdConsole
         string CurrentKey { get; }
         object CurrentValue { get; }
         SortedList<string, object> GetOptions();
+        KeyValuePair<string, object> GetOptionAtIndex(int index);
         void Init();
         void SetInput(string input);
         void IncrementOption();
