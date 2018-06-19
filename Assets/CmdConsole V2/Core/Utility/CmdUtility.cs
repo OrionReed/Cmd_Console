@@ -26,7 +26,6 @@ namespace CmdConsole
         {
             if (type.IsValueType)
             {
-                Debug.Log("Parts for Type: " + type.ToString() + " are: " + Regex.Split(Activator.CreateInstance(type).ToString(), @"\s").Length);
                 return Regex.Split(Activator.CreateInstance(type).ToString(), @"\s").Length;
             }
             else if (type.IsSubclassOf(typeof(ArgBase)))

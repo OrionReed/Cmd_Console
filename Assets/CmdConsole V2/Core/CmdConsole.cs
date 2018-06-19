@@ -2,8 +2,8 @@
 using TMPro;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Linq;
 using System;
+using System.Linq;
 using System.Text;
 
 namespace CmdConsole
@@ -68,9 +68,8 @@ namespace CmdConsole
         private char OnValidateChar(string text, int charIndex, char addedChar)
         {
             if (char.IsLetterOrDigit(addedChar) || addedChar == '-' || addedChar == '.')
-            {
                 return addedChar;
-            }
+
             if (char.IsWhiteSpace(addedChar))
             {
                 if (charIndex == 0 ||
@@ -87,88 +86,74 @@ namespace CmdConsole
         private void OnInputUpdate(string newInputString)
         {
             List<string> newInput = Regex.Split(newInputString, @"\s").Where(s => s.Length != 0).ToList<string>();
-
-            if (newInput.ElementAtOrDefault(0) == null)
-                command.SetInput("");
-            else if (newInput[0] != command.Input)
-                command.SetInput(newInput[0]);
+            UpdateCommandInput(newInput);
 
             if (latestInput != newInput)
                 latestInput = newInput;
 
             ICommand currentCommand = (ICommand)command.CurrentValue;
 
-            if (currentCommand != null)
+            if (currentCommand == null)
             {
-                if (currentCommand.Variables.Count != arguments.Count)
-                {
-                    RebuildArgs(currentCommand);
-                }
-                else
-                {
-                    for (int i = 0; i < arguments.Count; i++)
-                    {
-                        if (arguments[i].Type != currentCommand.Variables[i].Type)
-                        {
-                            if (arguments[i].GetType() == currentCommand.Variables[i].Type)
-                                continue;
-                            RebuildArgs(currentCommand);
-                            break;
-                        }
-                    }
-                }
-                if (newInput.Any())
-                {
-                    newInput.RemoveAt(0);
-                    for (int a = 0; a < arguments.Count; a++)
-                    {
-                        if (!newInput.Any())
-                        {
-                            arguments[a].SetInput("");
-                            continue;
-                        }
-                        string argInput = "";
-                        for (int x = 0; x < arguments[a].Parts; x++)
-                        {
-                            if (newInput.Any())
-                            {
-                                argInput += newInput.First() + " ";
-                                newInput.RemoveAt(0);
-                            }
-                            else
-                                break;
-                        }
-                        arguments[a].SetInput(argInput.Trim());
-                    }
-                }
+                RedrawOptionsWindow();
+                return;
             }
+            if (currentCommand.Variables.Count != arguments.Count)
+                RebuildArgs(currentCommand);
+
+            ValidateTypes(currentCommand);
+            UpdateArgInputs(newInput);
             RedrawOptionsWindow();
         }
 
-        private void OnSubmit(string s)
+        private void OnSubmit(string input)
         {
+            inputField.text = "";
+            if (string.IsNullOrWhiteSpace(input))
+                return;
+
             if (command.CurrentValue == null)
                 return;
 
-            if (arguments.Any())
+            if (!arguments.Any())
             {
-                try
-                {
-                    ((ICommand)command.CurrentValue).ExecuteWithArguments(arguments.Select(a => a.CurrentValue).ToList());
-                }
-                catch (NullReferenceException)
-                {
-                    Debug.Log("Command Args do not match command");
-                }
-                inputField.text = "";
+                ((ICommand)command.CurrentValue).ExecuteDefault();
                 return;
             }
-            ((ICommand)command.CurrentValue).ExecuteDefault();
-            inputField.text = "";
+
+            try
+            {
+                ((ICommand)command.CurrentValue).ExecuteWithArguments(arguments.Select(a => a.CurrentValue).ToList());
+            }
+            catch (NullReferenceException)
+            {
+                Debug.Log("Command Args do not match command");
+            }
         }
 
-
         // ---------- LIL' SUBSYSTEMS ---------- //
+
+        private void UpdateCommandInput(List<string> newInput)
+        {
+            if (newInput.ElementAtOrDefault(0) == null)
+                command.SetInput("");
+            else
+                command.SetInput(newInput[0]);
+        }
+
+        private void ValidateTypes(ICommand currentCommand)
+        {
+            for (int i = 0; i < arguments.Count; i++)
+            {
+                if (arguments[i].GetType() == currentCommand.Variables[i].Type)
+                    continue;
+                if (arguments[i].Type != currentCommand.Variables[i].Type)
+                {
+                    RebuildArgs(currentCommand);
+                    break;
+                }
+            }
+        }
 
         private void RedrawOptionsWindow()
         {
@@ -188,6 +173,35 @@ namespace CmdConsole
             if (inputField.text.Last() != ' ')
                 inputField.text += " ";
             inputField.MoveTextEnd(false);
+        }
+
+        private void UpdateArgInputs(List<string> newInput)
+        {
+            if (newInput == null)
+                return;
+
+            newInput.RemoveAt(0);
+
+            for (int a = 0; a < arguments.Count; a++)
+            {
+                if (!newInput.Any())
+                {
+                    arguments[a].SetInput("");
+                    continue;
+                }
+                string argInput = "";
+                for (int x = 0; x < arguments[a].Parts; x++)
+                {
+                    if (newInput.Any())
+                    {
+                        argInput += newInput.First() + " ";
+                        newInput.RemoveAt(0);
+                    }
+                    else
+                        break;
+                }
+                arguments[a].SetInput(argInput.Trim());
+            }
         }
 
         private void RebuildArgs(ICommand commandToBuild)
@@ -210,12 +224,12 @@ namespace CmdConsole
 
         private void AutocompleteArg()
         {
-            if (focusedArg.CurrentKey != null)
-            {
-                focusedArg.SetInput(focusedArg.CurrentKey);
-                RedrawInputText();
-                RedrawOptionsWindow();
-            }
+            if (focusedArg.CurrentKey == null)
+                return;
+
+            focusedArg.SetInput(focusedArg.CurrentKey);
+            RedrawInputText();
+            RedrawOptionsWindow();
         }
 
         private void UpdateFocus()
