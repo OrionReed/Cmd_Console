@@ -7,6 +7,7 @@ namespace CmdConsole
     {
         Type Type { get; }
         int Parts { get; }
+        int Position { get; }
         string Input { get; }
         string CurrentKey { get; }
         object CurrentValue { get; }
@@ -14,6 +15,7 @@ namespace CmdConsole
         KeyValuePair<string, object> GetOptionAtIndex(int index);
         void Init();
         void SetInput(string input);
+        void SetPosition(int position);
         void IncrementOption();
         void DecrementOption();
     }
