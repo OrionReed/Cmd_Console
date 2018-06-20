@@ -18,6 +18,7 @@ namespace CmdConsole
         [SerializeField] private KeyCode Autocomplete;
         [SerializeField] private RectTransform OptionsPanel;
         [SerializeField] private TMP_Text logText;
+        [SerializeField] private RectTransform nonRuntimeHighlight;
 
         #region A Mess of Vars
         private const float charWidth = 15f;
@@ -50,6 +51,7 @@ namespace CmdConsole
             CmdRegistry.Init();
             command.SetInput("");
             UpdateArgPositions();
+            UpdateArgFocus();
             RedrawOptionsWindow();
             CmdLog.LogText = logText;
             CmdLog.Style = stylePalette;
@@ -61,8 +63,15 @@ namespace CmdConsole
             if (Input.GetKeyDown(DecrementOption)) { DecrementCurrent(); RedrawOptionsWindow(); }
             if (Input.GetKeyDown(Autocomplete)) AutocompleteArg();
             if (inputField.caretPosition != lastCaretIndex)
-            { lastCaretIndex = inputField.caretPosition; UpdateArgPositions(); RedrawOptionsWindow(); }
+            {
+                lastCaretIndex = inputField.caretPosition;
+                UpdateArgPositions();
+                UpdateArgFocus();
+                UpdateHighlights();
+                RedrawOptionsWindow();
+            }
         }
+
 
         private char OnValidateChar(string text, int charIndex, char addedChar)
         {
@@ -154,6 +163,21 @@ namespace CmdConsole
             }
         }
 
+        private void UpdateHighlights()
+        {
+            foreach (IArg arg in arguments)
+            {
+                if (arg.Parts > 1)
+                {
+                    nonRuntimeHighlight.GetComponentInChildren<TMP_Text>().text = arg.Input;
+                    nonRuntimeHighlight.localPosition = new Vector2(
+                                inputField.textComponent.rectTransform.localPosition.x + highlightOffset.x + (arg.Position * charWidth),
+                                inputField.textComponent.rectTransform.localPosition.y + highlightOffset.y);
+                    nonRuntimeHighlight.GetComponent<CanvasGroup>().alpha = arg.Input.Any() ? 1 : 0;
+                }
+            }
+        }
+
         private void RedrawOptionsWindow()
         {
             if (focusedArg != null)
@@ -161,11 +185,19 @@ namespace CmdConsole
             else
                 optionText.text = "";
 
-            SuggestionPanelCanvas.alpha = optionText.text == "" ? 0 : 1;
-            inputField.caretColor = optionText.text == "" ? stylePalette.CaretDark : stylePalette.CaretLight;
-            OptionsPanel.localPosition = new Vector2(
-                inputField.textComponent.rectTransform.localPosition.x + highlightOffset.x + (focusedArg.Position * charWidth),
-                inputField.textComponent.rectTransform.localPosition.y + highlightOffset.y);
+            if (optionText.text == "")
+            {
+                SuggestionPanelCanvas.alpha = 0;
+                inputField.caretColor = stylePalette.CaretDark;
+            }
+            else
+            {
+                SuggestionPanelCanvas.alpha = 1;
+                inputField.caretColor = stylePalette.CaretLight;
+                OptionsPanel.localPosition = new Vector2(
+                    inputField.textComponent.rectTransform.localPosition.x + highlightOffset.x + (focusedArg.Position * charWidth),
+                    inputField.textComponent.rectTransform.localPosition.y + highlightOffset.y);
+            }
         }
 
         private void RedrawInputText()
@@ -235,23 +267,33 @@ namespace CmdConsole
 
         private void UpdateArgPositions()
         {
+            command.SetPosition(0);
             int position = command.Input.Length + 1;
-            bool foundFocus = false;
-            if (position > lastCaretIndex)
+            for (int i = 0; i < arguments.Count; i++)
             {
-                command.SetPosition(0);
+                arguments[i].SetPosition(position);
+                position += arguments[i].Input.Length + 1;
+            }
+        }
+        private void UpdateArgFocus()
+        {
+            bool foundFocus = false;
+            if (command.Input.Length + 1 > lastCaretIndex)
+            {
                 focusedArg = command;
                 foundFocus = true;
             }
             for (int i = 0; i < arguments.Count; i++)
             {
-                arguments[i].SetPosition(position);
-                position += arguments[i].Input.Length + 1;
-                if (position > lastCaretIndex && foundFocus == false)
+                if (arguments[i].Position + arguments[i].Input.Length + 1 > lastCaretIndex && foundFocus == false)
                 {
                     focusedArg = arguments[i];
                     foundFocus = true;
                 }
+            }
+            if (foundFocus == false)
+            {
+                focusedArg = null;
             }
         }
 
