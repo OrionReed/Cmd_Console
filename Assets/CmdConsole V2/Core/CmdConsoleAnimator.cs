@@ -13,7 +13,6 @@ namespace CmdConsole
 
         private bool consoleVisible = false;
         private IEnumerator CoTransition;
-        private CmdConsole console;
 
         public void SetVisibility(bool show)
         {
@@ -28,7 +27,6 @@ namespace CmdConsole
 
         private void Start()
         {
-            console = GetComponent<CmdConsole>();
             SetVisibilityImmediate(startVisible);
         }
 
@@ -45,7 +43,7 @@ namespace CmdConsole
             canvasGroup.interactable = setVisibility;
             canvasGroup.blocksRaycasts = setVisibility;
             if (setVisibility == true)
-                console.inputField?.ActivateInputField();
+                CmdConsole.InputField?.ActivateInputField();
 
             if (CoTransition != null) StopCoroutine(CoTransition);
             CoTransition = FadeCanvas(

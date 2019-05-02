@@ -19,9 +19,4 @@ namespace CmdConsole
         void IncrementOption();
         void DecrementOption();
     }
-
-    public enum ArgHighlight
-    {
-        Multipart, Error, OptionList,
-    }
 }

@@ -1,16 +1,18 @@
-﻿using UnityEngine;
-using TMPro;
+﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+using TMPro;
+using UnityEngine;
 
 namespace CmdConsole
 {
     public class CmdConsole : MonoBehaviour
     {
-        public TMP_InputField inputField { get; private set; }
+        public static TMP_InputField InputField { get; private set; }
+        public static Vector2 HighlightOffset { get; private set; }
+        public static float charWidth = 15f;
 
         [SerializeField] private CmdStylePalette stylePalette;
         [SerializeField] private KeyCode IncrementOption;
@@ -21,68 +23,65 @@ namespace CmdConsole
         [SerializeField] private RectTransform nonRuntimeHighlight;
 
         #region A Mess of Vars
-        private const float charWidth = 15f;
-        private Vector2 highlightOffset;
         private TMP_Text optionText;
         private TMP_SelectionCaret caret;
         private Canvas caretCanvas;
         private CanvasGroup SuggestionPanelCanvas;
         private int lastCaretIndex = 0;
-        private List<string> latestInput = new List<string>();
-        private List<IArg> arguments = new List<IArg>();
-        private IArg command = new Arg_Command();
+        private List<string> latestTokens = new List<string> ();
+        private List<IArg> arguments = new List<IArg> ();
+        private IArg command = new Arg_Command ();
         private IArg focusedArg;
         #endregion
 
-        private void Start()
+        private void Start ()
         {
-            inputField = GetComponentInChildren<TMP_InputField>();
-            optionText = OptionsPanel.GetComponentInChildren<TMP_Text>();
-            caret = inputField.GetComponentInChildren<TMP_SelectionCaret>();
-            caretCanvas = caret.gameObject.AddComponent<Canvas>();
+            InputField = GetComponentInChildren<TMP_InputField> ();
+            optionText = OptionsPanel.GetComponentInChildren<TMP_Text> ();
+            caret = InputField.GetComponentInChildren<TMP_SelectionCaret> ();
+            caretCanvas = caret.gameObject.AddComponent<Canvas> ();
             caretCanvas.overrideSorting = true;
             caretCanvas.sortingOrder = 3;
-            SuggestionPanelCanvas = OptionsPanel.GetComponent<CanvasGroup>();
-            highlightOffset = OptionsPanel.localPosition - inputField.textComponent.rectTransform.localPosition;
-            inputField.onValidateInput = OnValidateChar;
-            inputField.onValueChanged.AddListener(OnInputUpdate);
-            inputField.onSubmit.AddListener(OnSubmit);
+            SuggestionPanelCanvas = OptionsPanel.GetComponent<CanvasGroup> ();
+            HighlightOffset = OptionsPanel.localPosition - InputField.textComponent.rectTransform.localPosition;
+            InputField.onValidateInput = OnValidateChar;
+            InputField.onValueChanged.AddListener (OnInputUpdate);
+            InputField.onSubmit.AddListener (OnSubmit);
             optionText.text = "";
-            CmdRegistry.Init();
-            command.SetInput("");
-            UpdateArgPositions();
-            UpdateArgFocus();
-            RedrawOptionsWindow();
+            CmdRegistry.Init ();
+            command.SetInput ("");
+            UpdateArgPositions ();
+            UpdateArgFocus ();
+            RedrawOptionsWindow ();
             CmdLog.LogText = logText;
             CmdLog.Style = stylePalette;
         }
 
-        private void Update()
+        private void Update ()
         {
-            if (Input.GetKeyDown(IncrementOption)) { IncrementCurrent(); RedrawOptionsWindow(); }
-            if (Input.GetKeyDown(DecrementOption)) { DecrementCurrent(); RedrawOptionsWindow(); }
-            if (Input.GetKeyDown(Autocomplete)) AutocompleteArg();
-            if (inputField.caretPosition != lastCaretIndex)
+            if (Input.GetKeyDown (IncrementOption)) { IncrementCurrent (); RedrawOptionsWindow (); }
+            if (Input.GetKeyDown (DecrementOption)) { DecrementCurrent (); RedrawOptionsWindow (); }
+            if (Input.GetKeyDown (Autocomplete)) AutocompleteArg ();
+            if (InputField.caretPosition != lastCaretIndex)
             {
-                lastCaretIndex = inputField.caretPosition;
-                UpdateArgPositions();
-                UpdateArgFocus();
-                UpdateHighlights();
-                RedrawOptionsWindow();
+                lastCaretIndex = InputField.caretPosition;
+                UpdateArgPositions ();
+                UpdateArgFocus ();
+                UpdateHighlights ();
+                RedrawOptionsWindow ();
             }
         }
 
-
-        private char OnValidateChar(string text, int charIndex, char addedChar)
+        private char OnValidateChar (string text, int charIndex, char addedChar)
         {
-            if (char.IsLetterOrDigit(addedChar) || addedChar == '-' || addedChar == '.')
+            if (char.IsLetterOrDigit (addedChar) || addedChar == '-' || addedChar == '.')
                 return addedChar;
 
-            if (char.IsWhiteSpace(addedChar))
+            if (char.IsWhiteSpace (addedChar))
             {
                 if (charIndex == 0 ||
-                    charIndex > 0 && char.IsWhiteSpace(text[charIndex - 1]) ||
-                    charIndex < text.Length && char.IsWhiteSpace(text[charIndex]))
+                    charIndex > 0 && char.IsWhiteSpace (text[charIndex - 1]) ||
+                    charIndex < text.Length && char.IsWhiteSpace (text[charIndex]))
                 {
                     return '\0';
                 }
@@ -91,191 +90,191 @@ namespace CmdConsole
             return '\0';
         }
 
-        private void OnInputUpdate(string newInputString)
+        private void OnInputUpdate (string newInputString)
         {
-            List<string> newInput = Regex.Split(newInputString, @"\s").Where(s => s.Length != 0).ToList<string>();
-            UpdateCommandInput(newInput);
+            List<string> newInput = Regex.Split (newInputString, @"\s").Where (s => s.Length != 0).ToList<string> ();
+            UpdateCommandInput (newInput);
 
-            if (latestInput != newInput)
-                latestInput = newInput;
+            if (latestTokens != newInput)
+                latestTokens = newInput;
 
-            ICommand currentCommand = (ICommand)command.CurrentValue;
+            ICommand currentCommand = (ICommand) command.CurrentValue;
 
             if (currentCommand == null)
             {
-                RedrawOptionsWindow();
+                RedrawOptionsWindow ();
                 return;
             }
             if (currentCommand.Variables.Count != arguments.Count)
-                RebuildArgs(currentCommand);
+                RebuildArgs (currentCommand);
 
-            ValidateTypes(currentCommand);
-            UpdateArgInputs(newInput);
-            RedrawOptionsWindow();
+            ValidateTypes (currentCommand);
+            UpdateArgInputs (newInput);
+            RedrawOptionsWindow ();
         }
 
-        private void OnSubmit(string input)
+        private void OnSubmit (string input)
         {
-            inputField.text = "";
-            if (string.IsNullOrWhiteSpace(input))
+            InputField.text = "";
+            if (string.IsNullOrWhiteSpace (input))
                 return;
 
             if (command.CurrentValue == null)
                 return;
 
-            if (!arguments.Any())
+            if (!arguments.Any ())
             {
-                ((ICommand)command.CurrentValue).ExecuteDefault();
+                ((ICommand) command.CurrentValue).ExecuteDefault ();
                 return;
             }
 
             try
             {
-                ((ICommand)command.CurrentValue).ExecuteWithArguments(arguments.Select(a => a.CurrentValue).ToList());
+                ((ICommand) command.CurrentValue).ExecuteWithArguments (arguments.Select (a => a.CurrentValue).ToList ());
             }
             catch (NullReferenceException)
             {
-                Debug.Log("Command Args do not match command");
+                Debug.Log ("Command Args do not match command");
             }
         }
 
         // ---------- LIL' SUBSYSTEMS ---------- //
 
-        private void UpdateCommandInput(List<string> newInput)
+        private void UpdateCommandInput (List<string> newInput)
         {
-            if (newInput.ElementAtOrDefault(0) == null)
-                command.SetInput("");
+            if (newInput.ElementAtOrDefault (0) == null)
+                command.SetInput ("");
             else
-                command.SetInput(newInput[0]);
+                command.SetInput (newInput[0]);
         }
 
-        private void ValidateTypes(ICommand currentCommand)
+        private void UpdateArgInputs (List<string> newInput)
+        {
+            if (!newInput.Any ())
+                return;
+
+            newInput.RemoveAt (0);
+
+            for (int a = 0; a < arguments.Count; a++)
+            {
+                if (!newInput.Any ())
+                {
+                    arguments[a].SetInput ("");
+                    continue;
+                }
+                string argInput = "";
+                for (int x = 0; x < arguments[a].Parts; x++)
+                {
+                    if (newInput.Any ())
+                    {
+                        argInput += newInput.First () + " ";
+                        newInput.RemoveAt (0);
+                    }
+                    else
+                        break;
+                }
+                arguments[a].SetInput (argInput.Trim ());
+            }
+        }
+
+        private void ValidateTypes (ICommand currentCommand)
         {
             for (int i = 0; i < arguments.Count; i++)
             {
-                if (arguments[i].GetType() == currentCommand.Variables[i].Type)
+                if (arguments[i].GetType () == currentCommand.Variables[i].Type)
                     continue;
                 if (arguments[i].Type != currentCommand.Variables[i].Type)
                 {
-                    RebuildArgs(currentCommand);
+                    RebuildArgs (currentCommand);
                     break;
                 }
             }
         }
 
-        private void UpdateHighlights()
+        private void UpdateHighlights ()
         {
             foreach (IArg arg in arguments)
             {
                 if (arg.Parts > 1)
                 {
-                    nonRuntimeHighlight.GetComponentInChildren<TMP_Text>().text = arg.Input;
-                    nonRuntimeHighlight.localPosition = new Vector2(
-                                inputField.textComponent.rectTransform.localPosition.x + highlightOffset.x + (arg.Position * charWidth),
-                                inputField.textComponent.rectTransform.localPosition.y + highlightOffset.y);
-                    nonRuntimeHighlight.GetComponent<CanvasGroup>().alpha = arg.Input.Any() ? 1 : 0;
+                    nonRuntimeHighlight.GetComponentInChildren<TMP_Text> ().text = arg.Input;
+                    nonRuntimeHighlight.localPosition = new Vector2 (
+                        InputField.textComponent.rectTransform.localPosition.x + HighlightOffset.x + (arg.Position * charWidth),
+                        InputField.textComponent.rectTransform.localPosition.y + HighlightOffset.y);
+                    nonRuntimeHighlight.GetComponent<CanvasGroup> ().alpha = arg.Input.Any () ? 1 : 0;
                 }
             }
         }
 
-        private void RedrawOptionsWindow()
+        private void RedrawOptionsWindow ()
         {
             if (focusedArg != null)
-                optionText.text = GetOptionsString(focusedArg);
+                optionText.text = GetOptionsString (focusedArg);
             else
                 optionText.text = "";
 
             if (optionText.text == "")
             {
                 SuggestionPanelCanvas.alpha = 0;
-                inputField.caretColor = stylePalette.CaretDark;
+                InputField.caretColor = stylePalette.CaretDark;
             }
             else
             {
                 SuggestionPanelCanvas.alpha = 1;
-                inputField.caretColor = stylePalette.CaretLight;
-                OptionsPanel.localPosition = new Vector2(
-                    inputField.textComponent.rectTransform.localPosition.x + highlightOffset.x + (focusedArg.Position * charWidth),
-                    inputField.textComponent.rectTransform.localPosition.y + highlightOffset.y);
+                InputField.caretColor = stylePalette.CaretLight;
+                OptionsPanel.localPosition = new Vector2 (
+                    InputField.textComponent.rectTransform.localPosition.x + HighlightOffset.x + (focusedArg.Position * charWidth),
+                    InputField.textComponent.rectTransform.localPosition.y + HighlightOffset.y);
             }
         }
 
-        private void RedrawInputText()
+        private void RedrawInputText ()
         {
-            inputField.text = command.Input + " " + String.Join(" ", arguments.Select(a => a.Input).Where(i => i != "").ToArray());
-            if (inputField.text.Last() != ' ')
-                inputField.text += " ";
-            inputField.MoveTextEnd(false);
+            InputField.text = command.Input + " " + String.Join (" ", arguments.Select (a => a.Input).Where (i => i != "").ToArray ());
+            if (InputField.text.Last () != ' ')
+                InputField.text += " ";
+            InputField.MoveTextEnd (false);
         }
 
-        private void UpdateArgInputs(List<string> newInput)
+        private void RebuildArgs (ICommand commandToBuild)
         {
-            if (!newInput.Any())
-                return;
-
-            newInput.RemoveAt(0);
-
-            for (int a = 0; a < arguments.Count; a++)
-            {
-                if (!newInput.Any())
-                {
-                    arguments[a].SetInput("");
-                    continue;
-                }
-                string argInput = "";
-                for (int x = 0; x < arguments[a].Parts; x++)
-                {
-                    if (newInput.Any())
-                    {
-                        argInput += newInput.First() + " ";
-                        newInput.RemoveAt(0);
-                    }
-                    else
-                        break;
-                }
-                arguments[a].SetInput(argInput.Trim());
-            }
-        }
-
-        private void RebuildArgs(ICommand commandToBuild)
-        {
-            arguments.Clear();
+            arguments.Clear ();
             for (int i = 0; i < commandToBuild.Variables.Count; i++)
             {
-                if (typeof(ArgBase).IsAssignableFrom(commandToBuild.Variables[i].Type))
+                if (typeof (ArgBase).IsAssignableFrom (commandToBuild.Variables[i].Type))
                 {
-                    arguments.Add((IArg)Activator.CreateInstance(commandToBuild.Variables[i].Type));
-                    arguments.Last().Init();
+                    arguments.Add ((IArg) Activator.CreateInstance (commandToBuild.Variables[i].Type));
+                    arguments.Last ().Init ();
                 }
                 else
                 {
-                    arguments.Add(new Arg(commandToBuild.Variables[i].Type));
-                    arguments.Last().Init();
+                    arguments.Add (new Arg (commandToBuild.Variables[i].Type));
+                    arguments.Last ().Init ();
                 }
             }
         }
 
-        private void AutocompleteArg()
+        private void AutocompleteArg ()
         {
             if (focusedArg.CurrentKey == null)
                 return;
 
-            focusedArg.SetInput(focusedArg.CurrentKey);
-            RedrawInputText();
-            RedrawOptionsWindow();
+            focusedArg.SetInput (focusedArg.CurrentKey);
+            RedrawInputText ();
+            RedrawOptionsWindow ();
         }
 
-        private void UpdateArgPositions()
+        private void UpdateArgPositions ()
         {
-            command.SetPosition(0);
+            command.SetPosition (0);
             int position = command.Input.Length + 1;
             for (int i = 0; i < arguments.Count; i++)
             {
-                arguments[i].SetPosition(position);
+                arguments[i].SetPosition (position);
                 position += arguments[i].Input.Length + 1;
             }
         }
-        private void UpdateArgFocus()
+        private void UpdateArgFocus ()
         {
             bool foundFocus = false;
             if (command.Input.Length + 1 > lastCaretIndex)
@@ -297,33 +296,33 @@ namespace CmdConsole
             }
         }
 
-        private string GetOptionsString(IArg arg)
+        private string GetOptionsString (IArg arg)
         {
-            StringBuilder options = new StringBuilder("");
+            StringBuilder options = new StringBuilder ("");
             if (arg.CurrentValue == null)
-                return options.ToString();
+                return options.ToString ();
 
-            for (int i = arg.GetOptions().Count - 1; i >= 0; i--)
+            for (int i = arg.GetOptions ().Count - 1; i >= 0; i--)
             {
                 if (i == 0)
                 {
-                    options.Append(arg.Input.ColorString(stylePalette.Emphasis) + arg.CurrentKey.Remove(0, arg.Input.Length).ColorString(stylePalette.Autocomplete) + "\n");
+                    options.Append (arg.Input.ColorString (stylePalette.Emphasis) + arg.CurrentKey.Remove (0, arg.Input.Length).ColorString (stylePalette.Autocomplete) + "\n");
                     continue;
                 }
-                if (arg.GetOptionAtIndex(i).Key == arg.CurrentKey)
+                if (arg.GetOptionAtIndex (i).Key == arg.CurrentKey)
                 {
-                    options.Append(arg.GetOptionAtIndex(i).Key.ColorString(stylePalette.Confirm) + "\n");
+                    options.Append (arg.GetOptionAtIndex (i).Key.ColorString (stylePalette.Confirm) + "\n");
                     continue;
                 }
                 else
                 {
-                    options.Append(arg.GetOptionAtIndex(i).Key.ColorString(stylePalette.Default) + "\n");
+                    options.Append (arg.GetOptionAtIndex (i).Key.ColorString (stylePalette.Default) + "\n");
                 }
             }
-            return options.ToString();
+            return options.ToString ();
         }
 
-        private void IncrementCurrent() => focusedArg.IncrementOption();
-        private void DecrementCurrent() => focusedArg.DecrementOption();
+        private void IncrementCurrent () => focusedArg.IncrementOption ();
+        private void DecrementCurrent () => focusedArg.DecrementOption ();
     }
 }
