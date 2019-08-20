@@ -1,29 +1,23 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using CmdConsole;
+using UnityEngine;
 
-public class Arg_PositiveInt : ArgBase
-{
-    public Arg_PositiveInt()
-    {
+public class Arg_PositiveInt : ArgBase {
+    public Arg_PositiveInt () {
         Parts = 1;
-        Type = typeof(int);
+        Type = typeof (int);
     }
 
-    public override void Init() { }
+    public override void Init () { }
 
-    public override SortedList<string, object> GetOptions()
-    {
-        if (Input.CanParse(typeof(int)) && (int)Input.Parse(typeof(int)) > 0)
-        {
-            Options.Clear();
-            Options.Add(Input, Input.Parse(typeof(int)));
+    public override SortedList<string, object> GetOptions () {
+        if (Input.CanParse (typeof (int)) && (int) Input.Parse (typeof (int)) > 0) {
+            Options.Clear ();
+            Options.Add (Input, Input.Parse (typeof (int)));
             return Options;
-        }
-        else
-        {
-            Options.Clear();
+        } else {
+            Options.Clear ();
             return Options;
         }
     }

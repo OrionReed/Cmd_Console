@@ -1,32 +1,27 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using System.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
-namespace CmdConsole
-{
-    public class Arg_Command : ArgBase
-    {
-        public Arg_Command()
-        {
+namespace CmdConsole {
+    public class Arg_Command : ArgBase {
+        public Arg_Command () {
             Parts = 1;
-            Type = typeof(ICommand);
+            Type = typeof (ICommand);
         }
 
-        public override void Init() { }
+        public override void Init () { }
 
-        public override SortedList<string, object> GetOptions()
-        {
-            Options.Clear();
+        public override SortedList<string, object> GetOptions () {
+            Options.Clear ();
             List<KeyValuePair<string, ICommand>> coms;
 
-            coms = CmdRegistry.Commands.Where(c => c.Key.StartsWith(
-                Input, StringComparison.InvariantCultureIgnoreCase))
-                .ToList();
+            coms = CmdRegistry.Commands.Where (c => c.Key.StartsWith (
+                    Input, StringComparison.InvariantCultureIgnoreCase))
+                .ToList ();
 
-            foreach (KeyValuePair<string, ICommand> foundCommand in coms)
-            {
-                Options.Add(foundCommand.Key, foundCommand.Value);
+            foreach (KeyValuePair<string, ICommand> foundCommand in coms) {
+                Options.Add (foundCommand.Key, foundCommand.Value);
             }
             return Options;
         }

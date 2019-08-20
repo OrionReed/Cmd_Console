@@ -1,29 +1,24 @@
-﻿using System.Linq;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-namespace CmdConsole
-{
-    public class Highlight
-    {
+namespace CmdConsole {
+    public class Highlight {
         public HighlightState State { get; private set; } = HighlightState.Inactive;
         public RectTransform PanelRect { get; private set; }
         public TMP_Text Text { get; private set; }
         public CanvasGroup _CanvasGroup { get; private set; }
         public Image _Image { get; private set; }
 
-        public Highlight (RectTransform rect, TMP_Text text, CanvasGroup canvasGroup, Image image)
-        {
+        public Highlight (RectTransform rect, TMP_Text text, CanvasGroup canvasGroup, Image image) {
             PanelRect = rect;
             Text = text;
             _CanvasGroup = canvasGroup;
             _Image = image;
         }
 
-        public void ChangeState (HighlightState newState)
-        {
-            switch (newState)
-            {
+        public void ChangeState (HighlightState newState) {
+            switch (newState) {
                 case HighlightState.Inactive:
                     break;
                 case HighlightState.Multipart:
@@ -36,8 +31,7 @@ namespace CmdConsole
             }
         }
 
-        public void ChangeFocus (IArg argFocus)
-        {
+        public void ChangeFocus (IArg argFocus) {
             PanelRect.localPosition = new Vector2 (
                 CmdConsole.InputField.textComponent.rectTransform.localPosition.x + CmdConsole.HighlightOffset.x + (argFocus.Position * CmdConsole.charWidth),
                 CmdConsole.InputField.textComponent.rectTransform.localPosition.y + CmdConsole.HighlightOffset.y);
@@ -47,8 +41,7 @@ namespace CmdConsole
 
 }
 
-public enum HighlightState
-{
+public enum HighlightState {
     Inactive,
     Multipart,
     Error,

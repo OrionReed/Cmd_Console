@@ -1,11 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
-namespace CmdConsole
-{
-    [RequireComponent(typeof(CmdConsole))]
-    public class CmdConsoleAnimator : MonoBehaviour
-    {
+namespace CmdConsole {
+    [RequireComponent (typeof (CmdConsole))]
+    public class CmdConsoleAnimator : MonoBehaviour {
         [SerializeField] private float toggleSpeed = 0.1f;
         [SerializeField] private KeyCode toggleConsole = KeyCode.BackQuote;
         [SerializeField] private CanvasGroup canvasGroup;
@@ -14,53 +12,45 @@ namespace CmdConsole
         private bool consoleVisible = false;
         private IEnumerator CoTransition;
 
-        public void SetVisibility(bool show)
-        {
-            if (show) Transition(toggleSpeed, true);
-            else Transition(toggleSpeed, false);
+        public void SetVisibility (bool show) {
+            if (show) Transition (toggleSpeed, true);
+            else Transition (toggleSpeed, false);
         }
-        public void SetVisibilityImmediate(bool show)
-        {
-            if (show) Transition(0, true);
-            else Transition(0, false);
+        public void SetVisibilityImmediate (bool show) {
+            if (show) Transition (0, true);
+            else Transition (0, false);
         }
 
-        private void Start()
-        {
-            SetVisibilityImmediate(startVisible);
+        private void Start () {
+            SetVisibilityImmediate (startVisible);
         }
 
-        private void Update()
-        {
-            if (Input.GetKeyDown(toggleConsole))
-            {
-                SetVisibility(!consoleVisible);
+        private void Update () {
+            if (Input.GetKeyDown (toggleConsole)) {
+                SetVisibility (!consoleVisible);
             }
         }
 
-        private void Transition(float timeForEffect, bool setVisibility)
-        {
+        private void Transition (float timeForEffect, bool setVisibility) {
             canvasGroup.interactable = setVisibility;
             canvasGroup.blocksRaycasts = setVisibility;
             if (setVisibility == true)
-                CmdConsole.InputField?.ActivateInputField();
+                CmdConsole.InputField?.ActivateInputField ();
 
-            if (CoTransition != null) StopCoroutine(CoTransition);
-            CoTransition = FadeCanvas(
+            if (CoTransition != null) StopCoroutine (CoTransition);
+            CoTransition = FadeCanvas (
                 setVisibility ? 1 : 0,
                 timeForEffect,
                 canvasGroup);
 
-            StartCoroutine(CoTransition);
+            StartCoroutine (CoTransition);
             consoleVisible = setVisibility;
         }
 
-        private IEnumerator FadeCanvas(float targetAlpha, float time, CanvasGroup canvas)
-        {
+        private IEnumerator FadeCanvas (float targetAlpha, float time, CanvasGroup canvas) {
             float startAlpha = canvas.alpha;
-            for (float t = 0.0f; t < 1.0f; t += Time.deltaTime / Time.timeScale / time)
-            {
-                canvas.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+            for (float t = 0.0f; t < 1.0f; t += Time.deltaTime / Time.timeScale / time) {
+                canvas.alpha = Mathf.Lerp (startAlpha, targetAlpha, t);
                 yield return null;
             }
             canvas.alpha = targetAlpha;

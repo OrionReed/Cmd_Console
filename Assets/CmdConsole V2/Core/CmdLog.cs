@@ -1,22 +1,19 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
 
-namespace CmdConsole
-{
-    public class CmdLog
-    {
+namespace CmdConsole {
+    public class CmdLog {
         public static TMP_Text LogText;
         public static CmdStylePalette Style;
         private static int maxMessages = 30;
         private static List<CmdMessage> messagesInternal = new List<CmdMessage> ();
         private static List<string> messages = new List<string> ();
 
-        public static void Log (CmdMessage message)
-        {
+        public static void Log (CmdMessage message) {
             messagesInternal.Add (message);
 
             messages.Add (FormatLine (message));
@@ -27,13 +24,10 @@ namespace CmdConsole
             LogText.text = String.Join ("\n", messages);
         }
 
-        private static string FormatLine (CmdMessage line)
-        {
+        private static string FormatLine (CmdMessage line) {
             StringBuilder formatString = new StringBuilder ();
-            foreach (KeyValuePair<string, CMStyle> segment in line)
-            {
-                switch (segment.Value)
-                {
+            foreach (KeyValuePair<string, CMStyle> segment in line) {
+                switch (segment.Value) {
                     case CMStyle.Default:
                         formatString.Append (segment.Key.ColorString (Style.Default));
                         break;

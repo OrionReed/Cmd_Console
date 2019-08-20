@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/CmdConsole V1/Example Scene/CmdConsole.unity
+    path: Assets/CmdConsole 0.2/Example Scene/CmdConsole.unity
     guid: 911a0262036224f458fea84ba3774a67
   m_configObjects: {}

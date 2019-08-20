@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,10 +10,8 @@ namespace CmdConsole
 {
     public class CmdConsole : MonoBehaviour
     {
-        public static TMP_InputField InputField { get; private set; }
-        public static Vector2 HighlightOffset { get; private set; }
-        public static float charWidth = 15f;
 
+        #region Variables – Serialized Private
         [SerializeField] private CmdStylePalette stylePalette;
         [SerializeField] private KeyCode IncrementOption;
         [SerializeField] private KeyCode DecrementOption;
@@ -21,8 +19,8 @@ namespace CmdConsole
         [SerializeField] private RectTransform OptionsPanel;
         [SerializeField] private TMP_Text logText;
         [SerializeField] private RectTransform nonRuntimeHighlight;
-
-        #region A Mess of Vars
+        #endregion
+        #region Variables – Private
         private TMP_Text optionText;
         private TMP_SelectionCaret caret;
         private Canvas caretCanvas;
@@ -33,7 +31,13 @@ namespace CmdConsole
         private IArg command = new Arg_Command ();
         private IArg focusedArg;
         #endregion
+        #region Properties – Get
+        public static TMP_InputField InputField { get; private set; }
+        public static Vector2 HighlightOffset { get; private set; }
+        public static float charWidth = 15f;
+        #endregion
 
+        #region Methods – Unity Callbacks
         private void Start ()
         {
             InputField = GetComponentInChildren<TMP_InputField> ();
@@ -71,7 +75,9 @@ namespace CmdConsole
                 RedrawOptionsWindow ();
             }
         }
+        #endregion
 
+        #region Methods – Private
         private char OnValidateChar (string text, int charIndex, char addedChar)
         {
             if (char.IsLetterOrDigit (addedChar) || addedChar == '-' || addedChar == '.')
@@ -324,5 +330,7 @@ namespace CmdConsole
 
         private void IncrementCurrent () => focusedArg.IncrementOption ();
         private void DecrementCurrent () => focusedArg.DecrementOption ();
+        #endregion
+
     }
 }
